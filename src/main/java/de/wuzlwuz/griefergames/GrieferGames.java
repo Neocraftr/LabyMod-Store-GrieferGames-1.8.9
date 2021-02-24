@@ -17,7 +17,6 @@ import de.wuzlwuz.griefergames.utils.FileManager;
 import de.wuzlwuz.griefergames.utils.Helper;
 import de.wuzlwuz.griefergames.server.GrieferGamesServer;
 import de.wuzlwuz.griefergames.settings.ModSettings;
-import de.wuzlwuz.griefergames.utils.Updater;
 import net.labymod.addon.AddonLoader;
 import net.labymod.api.LabyModAddon;
 import net.labymod.core.LabyModCore;
@@ -37,7 +36,6 @@ public class GrieferGames extends LabyModAddon {
 	private ModSettings settings;
 	private SubServerListener subServerListener;
 	private GrieferGamesServer ggserver;
-	private Updater updater;
 	private Helper helper;
 	private FileManager fileManager;
 
@@ -72,7 +70,6 @@ public class GrieferGames extends LabyModAddon {
 	public void onEnable() {
 		griefergames = this;
 
-		updater = new Updater();
 		helper = new Helper();
 		settings = new ModSettings();
 		fileManager = new FileManager();
@@ -130,8 +127,6 @@ public class GrieferGames extends LabyModAddon {
 
 	@Override
 	public void loadConfig() {
-		updater.setAddonJar(AddonLoader.getFiles().get(about.uuid));
-
 		settings.loadConfig();
 
 		if(settings.getLanguage() == EnumLanguages.GAMELANGUAGE) {
@@ -160,10 +155,6 @@ public class GrieferGames extends LabyModAddon {
 
 	public GrieferGamesServer getGGServer() {
 		return ggserver;
-	}
-
-	public Updater getUpdater() {
-		return updater;
 	}
 
 	public Helper getHelper() {

@@ -24,8 +24,6 @@ public class ModSettings {
 			DEFAULT_AMP_REPLACEMENT_TABLIST = "[AMP] %CLEAN%",
 			DEFAULT_AFK_NICKNAME = "AFK_%name%";
 
-	private TextElement infoText;
-
 	private boolean modEnabled = true;
 	private EnumLanguages language = EnumLanguages.GAMELANGUAGE;
 	private String overrideRank = null;
@@ -263,7 +261,6 @@ public class ModSettings {
 				autoUpdate = value;
 				getConfig().addProperty("autoUpdate", value);
 				saveConfig();
-				updateInfo();
 			}
 		}, autoUpdate);
 		settings.add(autoUpdateBtn);
@@ -985,29 +982,7 @@ public class ModSettings {
 		commandsInfoText += "\n§e/resetincome §8- §7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo_resetincome");
 		settings.add(new TextElement(commandsInfoText));
 
-		infoText = new TextElement("");
-		updateInfo();
-		settings.add(infoText);
-	}
-
-	private void updateInfo() {
-		String text = "§7Version: §a"+GrieferGames.VERSION;
-		if(getGG().getUpdater().isUpdateAvailable()) {
-			text += " §c(";
-			if(autoUpdate) {
-				if(getGG().getUpdater().canDoUpdate()) {
-					text += LanguageManager.translateOrReturnKey("message_gg_updateReady");
-				} else {
-					text += LanguageManager.translateOrReturnKey("message_gg_updateFailed");
-				}
-			} else {
-				text += LanguageManager.translateOrReturnKey("message_gg_updateAvailable");
-			}
-			text += ")";
-		}
-
-		text += "\n§7GitHub: §ahttps://github.com/Neocraftr/LabyMod-GrieferGames-Addon-1.8.9";
-		infoText.setText(text);
+		settings.add(new TextElement("§7Version: §a"+GrieferGames.VERSION+"-laby"));
 	}
 
 	private GrieferGames getGG() {
