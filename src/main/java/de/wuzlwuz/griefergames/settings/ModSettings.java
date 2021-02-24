@@ -13,7 +13,6 @@ import net.labymod.core.LabyModCore;
 import net.labymod.gui.elements.ColorPicker;
 import net.labymod.gui.elements.DropDownMenu;
 import net.labymod.main.lang.LanguageManager;
-import net.labymod.settings.Settings;
 import net.labymod.settings.elements.*;
 import net.labymod.utils.Consumer;
 import net.labymod.utils.Material;
@@ -73,7 +72,6 @@ public class ModSettings {
 	private boolean discordShowSubServerEnabled = true;
 	private boolean autoPortal = false;
 	private boolean hideBoosterMenu = true;
-	private boolean autoUpdate = true;
 	private boolean vanishOnJoin = false;
 	private boolean flyOnJoin = false;
 	private boolean logTransactions = true;
@@ -227,9 +225,6 @@ public class ModSettings {
 		if (getConfig().has("hideBoosterMenu"))
 			hideBoosterMenu = getConfig().get("hideBoosterMenu").getAsBoolean();
 
-		if (getConfig().has("autoUpdate"))
-			autoUpdate = getConfig().get("autoUpdate").getAsBoolean();
-
 		if (getConfig().has("vanishOnJoin"))
 			vanishOnJoin = getConfig().get("vanishOnJoin").getAsBoolean();
 
@@ -252,18 +247,6 @@ public class ModSettings {
 				}
 			}, modEnabled);
 		settings.add(modEnabledBtn);
-
-		// Auto update
-		final BooleanElement autoUpdateBtn = new BooleanElement(LanguageManager.translateOrReturnKey("settings_gg_autoUpdate"),
-				new ControlElement.IconData("labymod/textures/buttons/update.png"), new Consumer<Boolean>() {
-			@Override
-			public void accept(Boolean value) {
-				autoUpdate = value;
-				getConfig().addProperty("autoUpdate", value);
-				saveConfig();
-			}
-		}, autoUpdate);
-		settings.add(autoUpdateBtn);
 
 		// Language
 		final DropDownMenu<EnumLanguages> languageDropDownMenu = new DropDownMenu<EnumLanguages>(
@@ -1213,10 +1196,6 @@ public class ModSettings {
 
 	public boolean isHideBoosterMenu() {
 		return hideBoosterMenu;
-	}
-
-	public boolean isAutoUpdate() {
-		return autoUpdate;
 	}
 
 	public boolean isVanishOnJoin() {
