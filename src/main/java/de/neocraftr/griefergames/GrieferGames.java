@@ -18,6 +18,8 @@ import de.neocraftr.griefergames.enums.EnumLanguages;
 import de.neocraftr.griefergames.utils.FileManager;
 import de.neocraftr.griefergames.utils.Helper;
 import net.labymod.addon.AddonLoader;
+import net.labymod.addon.online.AddonInfoManager;
+import net.labymod.addon.online.info.AddonInfo;
 import net.labymod.api.LabyModAddon;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamegui.ModuleCategory;
@@ -29,7 +31,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GrieferGames extends LabyModAddon {
 	public static final String PREFIX = "§8[§6GrieferGames-Addon§8] §r";
-	public static final String VERSION = "1.7.2";
+	public static final String VERSION = "1.8.0";
 	public static final String SERVER_IP = "griefergames.net", SECOND_SERVER_IP = "griefergames.de";
 
 	private static GrieferGames griefergames;
@@ -77,8 +79,9 @@ public class GrieferGames extends LabyModAddon {
 		System.out.println("[GrieferGames-Addon] enabled.");
 	}
 
-	public void loadTranslations(String lang) {
-		if(lang == null) {
+	public void loadTranslations() {
+		String lang = settings.getLanguage().name();
+		if(settings.getLanguage() == EnumLanguages.GAMELANGUAGE) {
 			List<String> items = Arrays.asList(LanguageManager.getLanguage().getName().split("_"));
 			lang = items.get(0).toUpperCase();
 		}
@@ -120,6 +123,19 @@ public class GrieferGames extends LabyModAddon {
 		}
 	}
 
+	public AddonInfo getAddonnfo() {
+		AddonInfoManager manager = AddonInfoManager.getInstance();
+		manager.init();
+		AddonInfo addonInfo = manager.getAddonInfoMap().get(about.uuid);
+		if (addonInfo == null) {
+			addonInfo = AddonLoader.getOfflineAddons().stream()
+					.filter(addon -> addon.getUuid().equals(about.uuid))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Unable to find addon info of \"" + about.name + "\" (" + about.uuid + ")!"));
+		}
+		return addonInfo;
+	}
+
 	@Override
 	public void onDisable() {
 		System.out.println("[GrieferGames-Addon] disabled.");
@@ -129,11 +145,7 @@ public class GrieferGames extends LabyModAddon {
 	public void loadConfig() {
 		settings.loadConfig();
 
-		if(settings.getLanguage() == EnumLanguages.GAMELANGUAGE) {
-			loadTranslations(null);
-		} else {
-			loadTranslations(settings.getLanguage().name());
-		}
+		loadTranslations();
 
 		moduleCategory = new ModuleCategory(LanguageManager.translateOrReturnKey("modules_category_gg"),
 				true, new ControlElement.IconData(new ResourceLocation("griefergames/textures/icons/icon.png")));
