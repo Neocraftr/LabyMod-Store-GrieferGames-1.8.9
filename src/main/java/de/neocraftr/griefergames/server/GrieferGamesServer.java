@@ -3,6 +3,7 @@ package de.neocraftr.griefergames.server;
 import java.util.*;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.neocraftr.griefergames.chat.*;
@@ -14,10 +15,7 @@ import de.neocraftr.griefergames.GrieferGames;
 import de.neocraftr.griefergames.utils.Helper;
 import io.netty.buffer.ByteBuf;
 import net.labymod.api.LabyModAPI;
-import net.labymod.api.events.MessageModifyChatEvent;
-import net.labymod.api.events.MessageReceiveEvent;
-import net.labymod.api.events.MessageSendEvent;
-import net.labymod.api.events.TabListEvent;
+import net.labymod.api.events.*;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamegui.ModuleCategoryRegistry;
 import net.labymod.main.LabyMod;
@@ -46,6 +44,7 @@ public class GrieferGamesServer extends Server {
 		new NicknameModule();
 		new DelayModule();
 		new IncomeModule();
+		new RedstoneModule();
 
 		// add Chat Modules
 		getGG().addChatModule(new PreventCommandFailure());
@@ -139,6 +138,13 @@ public class GrieferGamesServer extends Server {
 			@Override
 			public void accept(net.labymod.utils.ServerData serverData) {
 				getGG().setOnGrieferGames(false);
+			}
+		});
+
+		getApi().getEventManager().register(new RenderIngameOverlayEvent() {
+			@Override
+			public void onRender(float v) {
+				getGG().getPlotSwitchGui().render();
 			}
 		});
 	}
@@ -271,21 +277,32 @@ public class GrieferGamesServer extends Server {
 		String messageKey = getHelper().readStringFromBuffer(32767, packetBuffer);
 
 		if(packetBuffer.readableBytes() <= 0) return;
-		String message = getHelper().readStringFromBuffer(32767, packetBuffer);
+		String jsonMessage = getHelper().readStringFromBuffer(32767, packetBuffer);
+
+		//System.out.println("MysteryMod message: "+messageKey+" - "+jsonMessage);
+
+		JsonElement message;
+		try {
+			 message = parser.parse(jsonMessage);
+		} catch(Exception err) {
+			System.err.println("Error while parsing MysteryMod message: "+err.getMessage());
+			return;
+		}
 
 		if(messageKey.equals("user_subtitle")) {
-			try {
-				JsonArray subtitleArray = parser.parse(message).getAsJsonArray();
-				JsonObject subtitle = subtitleArray.get(0).getAsJsonObject();
+			JsonArray subtitleArray = message.getAsJsonArray();
+			JsonObject subtitle = subtitleArray.get(0).getAsJsonObject();
 
-				subtitle.addProperty("uuid", subtitle.get("targetId").getAsString());
-				subtitle.addProperty("value", subtitle.get("text").getAsString());
-				subtitle.addProperty("size", 1.2);
+			subtitle.addProperty("uuid", subtitle.get("targetId").getAsString());
+			subtitle.addProperty("value", subtitle.get("text").getAsString());
+			subtitle.addProperty("size", 1.2);
 
-				LabyMod.getInstance().getEventManager().callServerMessage("account_subtitle", subtitleArray);
-			} catch(Exception err) {
-				System.err.println("Error while parsing subtitle message: "+err.getMessage());
-			}
+			LabyMod.getInstance().getEventManager().callServerMessage("account_subtitle", subtitleArray);
+		}
+
+		if(messageKey.equals("redstone")) {
+			String redstoneState = message.getAsJsonObject().get("status").getAsString();
+			getGG().setRedstoneActive(redstoneState.equals("0"));
 		}
 	}
 

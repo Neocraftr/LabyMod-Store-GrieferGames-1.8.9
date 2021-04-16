@@ -1,10 +1,8 @@
 package de.neocraftr.griefergames.settings;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.google.gson.JsonObject;
 
@@ -12,6 +10,8 @@ import de.neocraftr.griefergames.GrieferGames;
 import de.neocraftr.griefergames.enums.EnumLanguages;
 import de.neocraftr.griefergames.enums.EnumRealnameShown;
 import de.neocraftr.griefergames.enums.EnumSounds;
+import de.neocraftr.griefergames.enums.CityBuild;
+import de.neocraftr.griefergames.plots.gui.PlotsGui;
 import net.labymod.core.LabyModCore;
 import net.labymod.gui.elements.ColorPicker;
 import net.labymod.gui.elements.DropDownMenu;
@@ -22,6 +22,7 @@ import net.labymod.utils.Consumer;
 import net.labymod.utils.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.input.Keyboard;
 
 public class ModSettings {
 	public static final String DEFAULT_AMP_REPLACEMENT_CHAT = "[AMP]",
@@ -84,6 +85,8 @@ public class ModSettings {
 	private boolean flyOnJoin;
 	private boolean logTransactions;
 	private boolean showPrefixInDisplayName;
+	private int plotMenuKey;
+	private int addPlotKey;
 
 	public void loadConfig() {
 		// comnversion of old amp replacement
@@ -262,6 +265,12 @@ public class ModSettings {
 
 		showPrefixInDisplayName = getConfig().has("showPrefixInDisplayName") ?
 				getConfig().get("showPrefixInDisplayName").getAsBoolean() : true;
+
+		plotMenuKey = getConfig().has("plotMenuKey") ?
+				getConfig().get("plotMenuKey").getAsInt() : Keyboard.KEY_R;
+
+		addPlotKey = getConfig().has("addPlotKey") ?
+				getConfig().get("addPlotKey").getAsInt() : -1;
 	}
 
 	public void fillSettings(final List<SettingsElement> settings) {
@@ -296,6 +305,7 @@ public class ModSettings {
 
 							loadConfig();
 							getGG().loadTranslations();
+							getGG().getPlotManager().getPlots().clear();
 							reinitSettings();
 						}
 					}, 700);
@@ -339,8 +349,21 @@ public class ModSettings {
 		});
 		settings.add(languageDropDown);
 
-		// Category: Chat
+		// Manage plots
 		settings.add(new HeaderElement(""));
+		settings.add(new ButtonElement("§b§l"+LanguageManager.translateOrReturnKey("settings_gg_plots"),
+				LanguageManager.translateOrReturnKey("settings_gg_plotsBtn"), new ControlElement.IconData(Material.GRASS), new Runnable() {
+			@Override
+			public void run() {
+				CityBuild currentCityBuild = CityBuild.ALL;
+				if(modEnabled && getGG().isOnGrieferGames()) {
+					currentCityBuild = getGG().getHelper().cityBuildFromServerName(getGG().getSubServer(), CityBuild.ALL);
+				}
+				Minecraft.getMinecraft().displayGuiScreen(new PlotsGui(Minecraft.getMinecraft().currentScreen, currentCityBuild));
+			}
+		}));
+
+		// Category: Chat
 		final ListContainerElement chatCategory = new ListContainerElement("§b§l"+LanguageManager.translateOrReturnKey("settings_gg_category_chat"),
 				new ControlElement.IconData("labymod/textures/settings/settings/second_chat.png"));
 		settings.add(chatCategory);
@@ -763,7 +786,7 @@ public class ModSettings {
 
 		// Log transactions
 		final BooleanElement logTransactionsBtn = new BooleanElement(LanguageManager.translateOrReturnKey("settings_gg_logTransactions"),
-			new ControlElement.IconData("labymod/textures/settings/settings/sendanonymousstatistics.png"),
+			new ControlElement.IconData("griefergames/textures/icons/labymod_statistics.png"),
 			new Consumer<Boolean>() {
 				@Override
 				public void accept(Boolean value) {
@@ -1044,6 +1067,35 @@ public class ModSettings {
 		}, discordShowSubServerEnabled);
 		friendsCategory.getSubSettings().add(discordShowSubServerEnabledBtn);
 
+		// Category: Hotkeys
+		final ListContainerElement hotkeysCategory = new ListContainerElement("§b§l"+LanguageManager.translateOrReturnKey("settings_gg_category_hotkeys"),
+				new ControlElement.IconData("labymod/textures/buttons/hover_default.png"));
+		settings.add(hotkeysCategory);
+
+		// Plot menu key
+		final KeyElement plotMenuKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_plotMenu"),
+				new ControlElement.IconData(Material.GRASS), plotMenuKey, new Consumer<Integer>() {
+			@Override
+			public void accept(Integer value) {
+				plotMenuKey = value;
+				getConfig().addProperty("plotMenuKey", value);
+				saveConfig();
+			}
+		});
+		hotkeysCategory.getSubSettings().add(plotMenuKeySetting);
+
+		// Add plot key
+		final KeyElement addPlotKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_addPlot"),
+				new ControlElement.IconData("labymod/textures/settings/category/addons.png"), addPlotKey, new Consumer<Integer>() {
+			@Override
+			public void accept(Integer value) {
+				addPlotKey = value;
+				getConfig().addProperty("addPlotKey", value);
+				saveConfig();
+			}
+		});
+		hotkeysCategory.getSubSettings().add(addPlotKeySetting);
+
 		String commandsInfoText = "§7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo");
 		commandsInfoText += "\n§e/resetincome §8- §7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo_resetincome");
 		settings.add(new TextElement(commandsInfoText));
@@ -1116,14 +1168,6 @@ public class ModSettings {
 		return this.realname;
 	}
 
-	public boolean isRealnameRight() {
-		return realname == EnumRealnameShown.SECONDCHAT || realname == EnumRealnameShown.BOTH;
-	}
-
-	public boolean isRealnameBoth() {
-		return this.realname.equals(EnumRealnameShown.BOTH);
-	}
-
 	/*
 	 * private void setRealnameClick(boolean realnameClick) { this.realnameClick =
 	 * realnameClick; }
@@ -1169,10 +1213,6 @@ public class ModSettings {
 
 	public boolean isMentionSound() {
 		return mentionSound != EnumSounds.NONE;
-	}
-
-	public void setMentionSound(EnumSounds mentionSound) {
-		this.mentionSound = mentionSound;
 	}
 
 	public boolean isPayChatRight() {
@@ -1305,5 +1345,13 @@ public class ModSettings {
 
 	public boolean isShowPrefixInDisplayName() {
 		return showPrefixInDisplayName;
+	}
+
+	public int getPlotMenuKey() {
+		return plotMenuKey;
+	}
+
+	public int getAddPlotKey() {
+		return addPlotKey;
 	}
 }

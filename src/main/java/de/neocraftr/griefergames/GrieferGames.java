@@ -11,6 +11,8 @@ import java.util.Properties;
 
 import de.neocraftr.griefergames.booster.Booster;
 import de.neocraftr.griefergames.listener.SubServerListener;
+import de.neocraftr.griefergames.plots.PlotManager;
+import de.neocraftr.griefergames.plots.gui.PlotSwitchGui;
 import de.neocraftr.griefergames.server.GrieferGamesServer;
 import de.neocraftr.griefergames.settings.ModSettings;
 import de.neocraftr.griefergames.chat.Chat;
@@ -31,7 +33,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GrieferGames extends LabyModAddon {
 	public static final String PREFIX = "§8[§6GrieferGames-Addon§8] §r";
-	public static final String VERSION = "1.9.0";
+	public static final String VERSION = "1.11.0";
 	public static final String SERVER_IP = "griefergames.net", SECOND_SERVER_IP = "griefergames.de";
 
 	private static GrieferGames griefergames;
@@ -40,6 +42,8 @@ public class GrieferGames extends LabyModAddon {
 	private GrieferGamesServer ggserver;
 	private Helper helper;
 	private FileManager fileManager;
+	private PlotManager plotManager;
+	private PlotSwitchGui plotSwitchGui;
 
 	private boolean onGrieferGames = false;
 	private boolean showBoosterDummy = false;
@@ -47,6 +51,7 @@ public class GrieferGames extends LabyModAddon {
 	private boolean auraActive = false;
 	private boolean godActive = false;
 	private boolean flyActive = false;
+	private boolean redstoneActive = false;
 	private boolean newsStart = false;
 	private boolean afk = false;
 	private boolean firstJoin = false;
@@ -75,6 +80,8 @@ public class GrieferGames extends LabyModAddon {
 		helper = new Helper();
 		settings = new ModSettings();
 		fileManager = new FileManager();
+		plotManager = new PlotManager();
+		plotSwitchGui = new PlotSwitchGui();
 
 		System.out.println("[GrieferGames-Addon] enabled.");
 	}
@@ -144,6 +151,7 @@ public class GrieferGames extends LabyModAddon {
 	@Override
 	public void loadConfig() {
 		settings.loadConfig();
+		plotManager.loadConfig();
 
 		loadTranslations();
 
@@ -177,6 +185,13 @@ public class GrieferGames extends LabyModAddon {
 		return fileManager;
 	}
 
+	public PlotManager getPlotManager() {
+		return plotManager;
+	}
+
+	public PlotSwitchGui getPlotSwitchGui() {
+		return plotSwitchGui;
+	}
 
 	public boolean isShowBoosterDummy() {
 		return showBoosterDummy;
@@ -211,6 +226,13 @@ public class GrieferGames extends LabyModAddon {
 	}
 	public void setFlyActive(boolean flyActive) {
 		this.flyActive = flyActive;
+	}
+
+	public boolean isRedstoneActive() {
+		return redstoneActive;
+	}
+	public void setRedstoneActive(boolean redstoneActive) {
+		this.redstoneActive = redstoneActive;
 	}
 
 	public ModuleCategory getModuleCategory() {

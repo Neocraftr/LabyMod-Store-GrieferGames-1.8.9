@@ -1,0 +1,33 @@
+package de.neocraftr.griefergames.enums;
+
+public enum CityBuild {
+    ALL,
+    CB1,
+    CB2,
+    CB3,
+    CB4,
+    CB5,
+    CB6,
+    CB7,
+    CB8,
+    CB9,
+    CB10,
+    CB11,
+    CB12,
+    CB13,
+    CB14,
+    CB15,
+    CB16,
+    CB17,
+    CB18,
+    CB19,
+    CB20,
+    CB21,
+    CB22,
+    CB0,
+    EXTREME,
+    EVIL,
+    NATURE,
+    LAVA,
+    WASSER
+}
