@@ -85,6 +85,7 @@ public class ModSettings {
 	private boolean flyOnJoin;
 	private boolean logTransactions;
 	private boolean showPrefixInDisplayName;
+	private boolean openBookClientSide;
 	private int plotMenuKey;
 	private int addPlotKey;
 
@@ -265,6 +266,9 @@ public class ModSettings {
 
 		showPrefixInDisplayName = getConfig().has("showPrefixInDisplayName") ?
 				getConfig().get("showPrefixInDisplayName").getAsBoolean() : true;
+
+		openBookClientSide = getConfig().has("openBookClientSide") ?
+				getConfig().get("openBookClientSide").getAsBoolean() : true;
 
 		plotMenuKey = getConfig().has("plotMenuKey") ?
 				getConfig().get("plotMenuKey").getAsInt() : Keyboard.KEY_R;
@@ -935,6 +939,18 @@ public class ModSettings {
 		}, autoPortal);
 		automationsCategory.getSubSettings().add(autoPortalBtn);
 
+		// Open books client side
+		final BooleanElement openBookClientSideBtn = new BooleanElement(LanguageManager.translateOrReturnKey("settings_gg_openBookClientSide"),
+				new ControlElement.IconData(Material.BOOK_AND_QUILL), new Consumer<Boolean>() {
+			@Override
+			public void accept(Boolean value) {
+				openBookClientSide = value;
+				getConfig().addProperty("openBookClientSide", value);
+				saveConfig();
+			}
+		}, openBookClientSide);
+		automationsCategory.getSubSettings().add(openBookClientSideBtn);
+
 		// Vanish on join
 		final BooleanElement vanishOnJoinBtn = new BooleanElement(LanguageManager.translateOrReturnKey("settings_gg_vanishOnJoin"),
 				new ControlElement.IconData("griefergames/textures/icons/module_vanish.png"), new Consumer<Boolean>() {
@@ -1073,7 +1089,7 @@ public class ModSettings {
 		settings.add(hotkeysCategory);
 
 		// Plot menu key
-		final KeyElement plotMenuKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_plotMenu"),
+		final KeyElement plotMenuKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_plotMenuKey"),
 				new ControlElement.IconData(Material.GRASS), plotMenuKey, new Consumer<Integer>() {
 			@Override
 			public void accept(Integer value) {
@@ -1085,7 +1101,7 @@ public class ModSettings {
 		hotkeysCategory.getSubSettings().add(plotMenuKeySetting);
 
 		// Add plot key
-		final KeyElement addPlotKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_addPlot"),
+		final KeyElement addPlotKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_addPlotKey"),
 				new ControlElement.IconData("labymod/textures/settings/category/addons.png"), addPlotKey, new Consumer<Integer>() {
 			@Override
 			public void accept(Integer value) {
@@ -1345,6 +1361,10 @@ public class ModSettings {
 
 	public boolean isShowPrefixInDisplayName() {
 		return showPrefixInDisplayName;
+	}
+
+	public boolean isOpenBookClientSide() {
+		return openBookClientSide;
 	}
 
 	public int getPlotMenuKey() {

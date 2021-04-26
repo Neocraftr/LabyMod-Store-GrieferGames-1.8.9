@@ -7,26 +7,34 @@ import net.labymod.main.lang.LanguageManager;
 import net.labymod.settings.elements.ControlElement;
 import net.minecraft.util.ResourceLocation;
 
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
-public class DelayModule extends SimpleModule {
+public class ClearLagModule extends SimpleModule {
+
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("mm:ss");
+
     private GrieferGames getGG() {
         return GrieferGames.getGriefergames();
     }
 
-    public DelayModule() {
+    public ClearLagModule() {
         getGG().getApi().registerModule(this);
     }
 
     @Override
     public String getDisplayName() {
-        return LanguageManager.translateOrReturnKey("module_gg_delay_displayName");
+        return LanguageManager.translateOrReturnKey("module_gg_clearlag_displayName");
     }
 
     @Override
     public String getDisplayValue() {
-        long remainingTime = getGG().getWaitTime() - System.currentTimeMillis();
-        return TimeUnit.MILLISECONDS.toSeconds(remainingTime) + "s";
+        long remainingTime = getGG().getClearLagTime() - System.currentTimeMillis();
+        if(remainingTime > 60000) {
+            return timeFormat.format(remainingTime);
+        } else {
+            return TimeUnit.MILLISECONDS.toSeconds(remainingTime) + "s";
+        }
     }
 
     @Override
@@ -36,7 +44,7 @@ public class DelayModule extends SimpleModule {
 
     @Override
     public ControlElement.IconData getIconData() {
-        return new ControlElement.IconData(new ResourceLocation("griefergames/textures/icons/module_delay.png"));
+        return new ControlElement.IconData(new ResourceLocation("labymod/textures/misc/blocked.png"));
     }
 
     @Override
@@ -44,17 +52,17 @@ public class DelayModule extends SimpleModule {
 
     @Override
     public String getSettingName() {
-        return "gg_delay";
+        return "gg_clearlag";
     }
 
     @Override
     public String getDescription() {
-        return LanguageManager.translateOrReturnKey("module_gg_delay_description");
+        return LanguageManager.translateOrReturnKey("module_gg_clearlag_description");
     }
 
     @Override
     public boolean isShown() {
-        return getGG().getSettings().isModEnabled() && getGG().isOnGrieferGames() && getGG().getWaitTime() > System.currentTimeMillis() + 1000;
+        return getGG().getSettings().isModEnabled() && getGG().isOnGrieferGames() && getGG().getClearLagTime() > System.currentTimeMillis();
     }
 
     @Override

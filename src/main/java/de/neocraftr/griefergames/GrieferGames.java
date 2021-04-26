@@ -33,7 +33,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GrieferGames extends LabyModAddon {
 	public static final String PREFIX = "§8[§6GrieferGames-Addon§8] §r";
-	public static final String VERSION = "1.11.0";
+	public static final String VERSION = "1.12.0";
 	public static final String SERVER_IP = "griefergames.net", SECOND_SERVER_IP = "griefergames.de";
 
 	private static GrieferGames griefergames;
@@ -64,7 +64,8 @@ public class GrieferGames extends LabyModAddon {
 	private String subServer = "";
 	private String filterDuplicateLastMessage = "";
 	private String lastLabyChatSubServer = "", lastDiscordSubServer = "";
-	private int timeToWait = 0;
+	private long waitTime = 0;
+	private long clearLagTime = 0;
 	private double income = 0;
 	private long lastActiveTime = System.currentTimeMillis();
 	private BlockPos lastPlayerPosition = new BlockPos(0, 0, 0);
@@ -330,11 +331,11 @@ public class GrieferGames extends LabyModAddon {
 		this.newsStart = newsStart;
 	}
 
-	public int getTimeToWait() {
-		return timeToWait;
+	public long getWaitTime() {
+		return waitTime;
 	}
-	public void setTimeToWait(int timeToWait) {
-		this.timeToWait = timeToWait;
+	public void setWaitTime(long waitTime) {
+		this.waitTime = waitTime;
 	}
 
 	public double getIncome() {
@@ -342,6 +343,13 @@ public class GrieferGames extends LabyModAddon {
 	}
 	public void setIncome(double income) {
 		this.income = income;
+	}
+
+	public long getClearLagTime() {
+		return clearLagTime;
+	}
+	public void setClearLagTime(long clearLagTime) {
+		this.clearLagTime = clearLagTime;
 	}
 
 	public boolean isAfk() {
