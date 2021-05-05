@@ -29,6 +29,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Delete Sources Jar
+        run: rm ./build/libs/GrieferGames-sources.jar
+
       - name: Upload jar
         uses: actions/upload-artifact@v1
         with:
