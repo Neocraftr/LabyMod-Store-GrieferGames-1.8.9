@@ -9,8 +9,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
-import de.neocraftr.griefergames.booster.Booster;
 import de.neocraftr.griefergames.listener.SubServerListener;
+import de.neocraftr.griefergames.modules.BoosterModule;
 import de.neocraftr.griefergames.plots.PlotManager;
 import de.neocraftr.griefergames.plots.gui.PlotSwitchGui;
 import de.neocraftr.griefergames.server.GrieferGamesServer;
@@ -33,7 +33,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GrieferGames extends LabyModAddon {
 	public static final String PREFIX = "§8[§6GrieferGames-Addon§8] §r";
-	public static final String VERSION = "1.12.1";
+	public static final String VERSION = "1.14.0";
 	public static final String SERVER_IP = "griefergames.net", SECOND_SERVER_IP = "griefergames.de";
 
 	private static GrieferGames griefergames;
@@ -44,9 +44,9 @@ public class GrieferGames extends LabyModAddon {
 	private FileManager fileManager;
 	private PlotManager plotManager;
 	private PlotSwitchGui plotSwitchGui;
+	private BoosterModule boosterModule;
 
 	private boolean onGrieferGames = false;
-	private boolean showBoosterDummy = false;
 	private boolean vanishActive = false;
 	private boolean auraActive = false;
 	private boolean godActive = false;
@@ -56,8 +56,8 @@ public class GrieferGames extends LabyModAddon {
 	private boolean afk = false;
 	private boolean firstJoin = false;
 	private boolean hideBoosterMenu = false;
+	private boolean cityBuildDelay = false;
 	private ModuleCategory moduleCategory;
-	private List<Booster> boosters = new ArrayList<Booster>();
 	private List<Chat> chatModules = new ArrayList<Chat>();
 	private String nickname = "";
 	private String playerRank = "";
@@ -194,11 +194,12 @@ public class GrieferGames extends LabyModAddon {
 		return plotSwitchGui;
 	}
 
-	public boolean isShowBoosterDummy() {
-		return showBoosterDummy;
+	public BoosterModule getBoosterModule() {
+		return boosterModule;
 	}
-	public void setShowBoosterDummy(boolean showBoosterDummy) {
-		this.showBoosterDummy = showBoosterDummy;
+
+	public void setBoosterModule(BoosterModule boosterModule) {
+		this.boosterModule = boosterModule;
 	}
 
 	public boolean isVanishActive() {
@@ -238,54 +239,6 @@ public class GrieferGames extends LabyModAddon {
 
 	public ModuleCategory getModuleCategory() {
 		return moduleCategory;
-	}
-
-	public List<Booster> getBoosters() {
-		return boosters;
-	}
-	public void addBooster(Booster booster) {
-		boolean found = false;
-		if (getBoosters().size() > 0) {
-			for (Booster curBooster : getBoosters()) {
-				if (curBooster.getType().equalsIgnoreCase(booster.getType())) {
-					found = true;
-					if (booster.getCount() == -1) {
-						curBooster.incrementCount();
-						curBooster.addEndDates(booster.getEndDate());
-					} else {
-						curBooster.setCount(booster.getCount());
-						if (booster.getEndDate() != null) {
-							if (booster.getResetEndDates()) {
-								curBooster.setEndDates(booster.getEndDates());
-							} else {
-								curBooster.addEndDates(booster.getEndDate());
-							}
-						}
-					}
-				}
-			}
-		}
-		if (!found) {
-			if (booster.getCount() == -1) {
-				booster.setCount(1);
-			}
-			this.boosters.add(booster);
-		}
-	}
-	public void delBooster(Booster booster) {
-		this.boosters.remove(booster);
-	}
-	public void boosterDone(String type) {
-		if (boosters.size() > 0) {
-			for (Booster booster : boosters) {
-				if (booster.getType().equalsIgnoreCase(type)) {
-					if (booster.getCount() > 0) {
-						booster.decreaseEndDates();
-						booster.decreaseCount();
-					}
-				}
-			}
-		}
 	}
 
 	public List<Chat> getChatModules() {
@@ -434,5 +387,13 @@ public class GrieferGames extends LabyModAddon {
 
 	public void setHideBoosterMenu(boolean hideBoosterMenu) {
 		this.hideBoosterMenu = hideBoosterMenu;
+	}
+
+	public boolean isCityBuildDelay() {
+		return cityBuildDelay;
+	}
+
+	public void setCityBuildDelay(boolean cityBuildDelay) {
+		this.cityBuildDelay = cityBuildDelay;
 	}
 }
