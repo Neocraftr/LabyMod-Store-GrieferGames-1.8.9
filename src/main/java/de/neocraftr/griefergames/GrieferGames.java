@@ -17,8 +17,7 @@ import de.neocraftr.griefergames.server.GrieferGamesServer;
 import de.neocraftr.griefergames.settings.ModSettings;
 import de.neocraftr.griefergames.chat.Chat;
 import de.neocraftr.griefergames.enums.EnumLanguages;
-import de.neocraftr.griefergames.utils.FileManager;
-import de.neocraftr.griefergames.utils.Helper;
+import de.neocraftr.griefergames.utils.*;
 import net.labymod.addon.AddonLoader;
 import net.labymod.addon.online.AddonInfoManager;
 import net.labymod.addon.online.info.AddonInfo;
@@ -33,7 +32,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GrieferGames extends LabyModAddon {
 	public static final String PREFIX = "§8[§6GrieferGames-Addon§8] §r";
-	public static final String VERSION = "1.15.0";
+	public static final String VERSION = "1.16.3";
 	public static final String SERVER_IP = "griefergames.net", SECOND_SERVER_IP = "griefergames.de";
 
 	private static GrieferGames griefergames;
@@ -45,16 +44,16 @@ public class GrieferGames extends LabyModAddon {
 	private PlotManager plotManager;
 	private PlotSwitchGui plotSwitchGui;
 	private BoosterModule boosterModule;
+	private SubServerGroups subServerGroups;
+	private PlayerRankGroups playerRankGroups;
 
 	private boolean onGrieferGames = false;
 	private boolean vanishActive = false;
 	private boolean auraActive = false;
 	private boolean godActive = false;
-	private boolean flyActive = false;
 	private boolean redstoneActive = false;
 	private boolean newsStart = false;
 	private boolean afk = false;
-	private boolean firstJoin = false;
 	private boolean hideBoosterMenu = false;
 	private boolean cityBuildDelay = false;
 	private ModuleCategory moduleCategory;
@@ -67,6 +66,8 @@ public class GrieferGames extends LabyModAddon {
 	private long waitTime = 0;
 	private long clearLagTime = 0;
 	private double income = 0;
+	private int balance = 0;
+	private int bankBalance = 0;
 	private long lastActiveTime = System.currentTimeMillis();
 	private BlockPos lastPlayerPosition = new BlockPos(0, 0, 0);
 
@@ -83,6 +84,8 @@ public class GrieferGames extends LabyModAddon {
 		fileManager = new FileManager();
 		plotManager = new PlotManager();
 		plotSwitchGui = new PlotSwitchGui();
+		subServerGroups = new SubServerGroups();
+		playerRankGroups = new PlayerRankGroups();
 
 		System.out.println("[GrieferGames-Addon] enabled.");
 	}
@@ -145,11 +148,6 @@ public class GrieferGames extends LabyModAddon {
 	}
 
 	@Override
-	public void onDisable() {
-		System.out.println("[GrieferGames-Addon] disabled.");
-	}
-
-	@Override
 	public void loadConfig() {
 		settings.loadConfig();
 		plotManager.loadConfig();
@@ -198,6 +196,14 @@ public class GrieferGames extends LabyModAddon {
 		return boosterModule;
 	}
 
+	public SubServerGroups getSubServerGroups() {
+		return subServerGroups;
+	}
+
+	public PlayerRankGroups getPlayerRankGroups() {
+		return playerRankGroups;
+	}
+
 	public void setBoosterModule(BoosterModule boosterModule) {
 		this.boosterModule = boosterModule;
 	}
@@ -221,13 +227,6 @@ public class GrieferGames extends LabyModAddon {
 	}
 	public void setGodActive(boolean godActive) {
 		this.godActive = godActive;
-	}
-
-	public boolean isFlyActive() {
-		return flyActive;
-	}
-	public void setFlyActive(boolean flyActive) {
-		this.flyActive = flyActive;
 	}
 
 	public boolean isRedstoneActive() {
@@ -298,6 +297,20 @@ public class GrieferGames extends LabyModAddon {
 		this.income = income;
 	}
 
+	public int getBalance() {
+		return balance;
+	}
+	public void setBalance(int balance) {
+		this.balance = balance;
+	}
+
+	public int getBankBalance() {
+		return bankBalance;
+	}
+	public void setBankBalance(int bankBalance) {
+		this.bankBalance = bankBalance;
+	}
+
 	public long getClearLagTime() {
 		return clearLagTime;
 	}
@@ -321,16 +334,8 @@ public class GrieferGames extends LabyModAddon {
 		this.lastPlayerPosition = lastPlayerPosition;
 	}
 
-	public void callSubServerEvent(String subServerNameOld, String subServerName) {
-		subServerListener.onSubServerChanged(subServerNameOld, subServerName);
-	}
-
-	public boolean isFirstJoin() {
-		return firstJoin;
-	}
-
-	public void setFirstJoin(boolean firstJoin) {
-		this.firstJoin = firstJoin;
+	public void callSubServerEvent(String subServerName) {
+		subServerListener.onSubServerChanged(subServerName);
 	}
 
 	public long getLastActiveTime() {

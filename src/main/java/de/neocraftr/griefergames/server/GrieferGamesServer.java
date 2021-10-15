@@ -3,10 +3,7 @@ package de.neocraftr.griefergames.server;
 import java.util.*;
 
 import de.neocraftr.griefergames.chat.*;
-import de.neocraftr.griefergames.listener.KeyInputListener;
-import de.neocraftr.griefergames.listener.MessageReceiveListener;
-import de.neocraftr.griefergames.listener.OnTickListener;
-import de.neocraftr.griefergames.listener.PluginMessageListener;
+import de.neocraftr.griefergames.listener.*;
 import de.neocraftr.griefergames.modules.*;
 import de.neocraftr.griefergames.settings.ModSettings;
 import de.neocraftr.griefergames.GrieferGames;
@@ -14,17 +11,22 @@ import de.neocraftr.griefergames.utils.Helper;
 import net.labymod.api.LabyModAPI;
 import net.labymod.api.events.*;
 import net.labymod.ingamegui.ModuleCategoryRegistry;
+import net.labymod.main.lang.LanguageManager;
 import net.labymod.servermanager.ChatDisplayAction;
 import net.labymod.servermanager.Server;
 import net.labymod.settings.elements.SettingsElement;
 import net.labymod.utils.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class GrieferGamesServer extends Server {
+
+	private boolean modulesLoaded = false;
 
 	public GrieferGamesServer() {
 		super("GrieferGames", GrieferGames.SERVER_IP, GrieferGames.SECOND_SERVER_IP);
@@ -64,9 +66,10 @@ public class GrieferGamesServer extends Server {
 		getGG().addChatModule(new ChatTime());
 
 		getApi().registerForgeListener(new KeyInputListener());
-		getApi().registerForgeListener(new OnTickListener());
+		getApi().registerForgeListener(new TickListener());
 		getApi().getEventManager().register(new PluginMessageListener());
 		getApi().getEventManager().register(new MessageReceiveListener());
+		getApi().getEventManager().registerOnIncomingPacket(new ServerPacketListener());
 
 		getApi().getEventManager().register(new MessageModifyChatEvent() {
 			@Override
@@ -86,6 +89,7 @@ public class GrieferGamesServer extends Server {
 				if(message.toLowerCase().startsWith("/ggdebug")) {
 					getGG().getApi().displayMessageInChat("§7----------- "+GrieferGames.PREFIX+"§7----------- ");
 					getGG().getApi().displayMessageInChat("§7Rank: §e" +getGG().getPlayerRank());
+					getGG().getApi().displayMessageInChat("§7Server: §e" +getGG().getSubServer());
 					return true;
 				}
 
@@ -109,6 +113,7 @@ public class GrieferGamesServer extends Server {
 			@Override
 			public void accept(net.labymod.utils.ServerData serverData) {
 				getGG().setOnGrieferGames(false);
+				getGG().setSubServer("");
 			}
 		});
 
@@ -170,6 +175,13 @@ public class GrieferGamesServer extends Server {
 		try {
 			IChatComponent msg = (IChatComponent) o;
 
+			// Brings locally sent messages in the proper format
+			if(!msg.getUnformattedTextForChat().equals("")) {
+				IChatComponent newMsg = new ChatComponentText("");
+				newMsg.getSiblings().add(msg);
+				msg = newMsg;
+			}
+
 			List<Chat> chatModules = getGG().getChatModules();
 			for (Chat chatModule : chatModules) {
 				if (chatModule.doActionModifyChatMessage(msg)) {
@@ -187,11 +199,48 @@ public class GrieferGamesServer extends Server {
 	@Override
 	public void onJoin(ServerData serverData) {
 		getGG().setOnGrieferGames(true);
-		getGG().setSubServer("");
 		getGG().setLastLabyChatSubServer("");
 		getGG().setLastDiscordSubServer("");
-		getGG().setNickname("");
-		getGG().setFirstJoin(true);
+
+		Thread thread = new Thread() {
+			public void run() {
+				try {
+					Thread.sleep(500);
+					int errorCount = 0;
+					while(errorCount < 3) {
+						if(getGG().getHelper().loadPlayerRank()) {
+							if (!modulesLoaded) {
+								modulesLoaded = true;
+
+								if (getGG().getPlayerRankGroups().hasGodMode(getGG().getPlayerRank())) {
+									new GodmodeModule();
+								}
+								if (getGG().getPlayerRankGroups().hasAura(getGG().getPlayerRank())) {
+									new AuraModule();
+								}
+								if (getGG().getPlayerRankGroups().hasVanish(getGG().getPlayerRank())) {
+									new VanishModule();
+								}
+							}
+							if(getGG().getSettings().isAutoPortl()) {
+								Minecraft.getMinecraft().thePlayer.sendChatMessage("/portal");
+							}
+							break;
+						} else {
+							errorCount++;
+							Thread.sleep(500);
+						}
+					}
+					if(errorCount >= 3) {
+						getGG().getApi().displayMessageInChat(GrieferGames.PREFIX+"§4"+ LanguageManager.translateOrReturnKey("message_gg_error")+
+								": §c"+LanguageManager.translateOrReturnKey("message_gg_rankError"));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		thread.start();
 	}
 
 	@Override
