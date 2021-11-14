@@ -87,6 +87,8 @@ public class ModSettings {
 	private boolean openBookClientSide;
 	private int plotMenuKey;
 	private int addPlotKey;
+	private int grieferWertKey;
+	private boolean showGWImages;
 	private int itemRemoverNotification;
 	private boolean showBalance;
 	private boolean showBankBallance;
@@ -277,6 +279,12 @@ public class ModSettings {
 
 		addPlotKey = getConfig().has("addPlotKey") ?
 				getConfig().get("addPlotKey").getAsInt() : -1;
+
+		grieferWertKey = getConfig().has("grieferWertKey") ?
+				getConfig().get("grieferWertKey").getAsInt() : Keyboard.KEY_P;
+
+		showGWImages = getConfig().has("showGWImages") ?
+				getConfig().get("showGWImages").getAsBoolean() : true;
 
 		itemRemoverNotification = getConfig().has("itemRemoverNotification") ?
 				getConfig().get("itemRemoverNotification").getAsInt() : 0;
@@ -1172,6 +1180,29 @@ public class ModSettings {
 		});
 		hotkeysCategory.getSubSettings().add(addPlotKeySetting);
 
+		// GrieferWert gui key
+		final KeyElement gwKeySetting = new KeyElement(LanguageManager.translateOrReturnKey("settings_gg_grieferWertKey"),
+				new ControlElement.IconData(Material.EMERALD), grieferWertKey, new Consumer<Integer>() {
+			@Override
+			public void accept(Integer value) {
+				grieferWertKey = value;
+				getConfig().addProperty("grieferWertKey", value);
+				saveConfig();
+			}
+		});
+		hotkeysCategory.getSubSettings().add(gwKeySetting);
+
+		final BooleanElement showGWImagesSetting = new BooleanElement(LanguageManager.translateOrReturnKey("settings_gg_showGWImages"),
+				new ControlElement.IconData("labymod/textures/settings/modules/memory_colorednumber.png"), new Consumer<Boolean>() {
+			@Override
+			public void accept(Boolean value) {
+				showGWImages = value;
+				getConfig().addProperty("showGWImages", value);
+				saveConfig();
+			}
+		}, showGWImages);
+		hotkeysCategory.getSubSettings().add(showGWImagesSetting);
+
 		String commandsInfoText = "§7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo");
 		commandsInfoText += "\n§e/resetincome §8- §7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo_resetincome");
 		settings.add(new TextElement(commandsInfoText));
@@ -1426,6 +1457,14 @@ public class ModSettings {
 
 	public int getAddPlotKey() {
 		return addPlotKey;
+	}
+
+	public int getGrieferWertKey() {
+		return grieferWertKey;
+	}
+
+	public boolean isShowGWImages() {
+		return showGWImages;
 	}
 
 	public int getItemRemoverNotification() {
