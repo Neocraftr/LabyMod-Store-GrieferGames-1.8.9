@@ -1207,7 +1207,7 @@ public class ModSettings {
 		commandsInfoText += "\n§e/resetincome §8- §7"+LanguageManager.translateOrReturnKey("settings_gg_cmdinfo_resetincome");
 		settings.add(new TextElement(commandsInfoText));
 
-		settings.add(new TextElement("§7Version: §a"+GrieferGames.VERSION+"-laby"));
+		settings.add(new TextElement("§7Version: §a"+GrieferGames.VERSION+"-laby\n§7Website: §ahttps://mc.im1random.org"));
 	}
 
 	public void reinitSettings() {
